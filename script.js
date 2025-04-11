@@ -9,8 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let resetCount = 0;
     let currentMessageIndex = -1;
 
-    // Get the backend URL from environment or use localhost for development
-    const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3000';
+    const BACKEND_URL = window.APP_CONFIG.backendUrl;
 
     setTimeout(() => {
         heading.style.animation = 'none';
@@ -49,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateProgress() {
         if (isPaused) return;
 
-        progress += 1;
+        progress += window.APP_CONFIG.increment;
         
         if (progress >= 99) {
             isPaused = true;

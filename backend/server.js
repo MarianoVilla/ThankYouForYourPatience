@@ -286,7 +286,7 @@ const messageSets = [
     ]
 ];
 
-// Endpoint to get a message based on set index and progress
+
 app.get('/api/message', (req, res) => {
     const { setIndex, progress } = req.query;
     
@@ -299,7 +299,6 @@ app.get('/api/message', (req, res) => {
         return res.status(404).json({ error: 'Message set not found' });
     }
 
-    // Find the appropriate message for the current progress
     let message = null;
     for (let i = set.length - 1; i >= 0; i--) {
         if (parseInt(progress) >= set[i].threshold) {
