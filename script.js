@@ -76,6 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     setTimeout(() => {
-        setInterval(updateProgress, 500);
+        setInterval(updateProgress, window.APP_CONFIG.apiIntervalMillis);
     }, 1500);
 }); 

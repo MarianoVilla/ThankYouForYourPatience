@@ -2,11 +2,13 @@
 const config = {
     development: {
         backendUrl: 'http://localhost:3000',
-        increment: 1
+        increment: 1,
+        apiIntervalMillis: 500
     },
     production: {
         backendUrl: 'https://thankyouforyourpatience.onrender.com',
-        increment: 0.5
+        increment: 0.5,
+        apiIntervalMillis: 1000
     }
 };
 
