@@ -7,25 +7,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let progress = 0;
     let isPaused = false;
     let resetCount = 0;
-
-    const messages = [
-        { threshold: 10, text: "This might take a moment..." },
-        { threshold: 20, text: "But it'll be worth it..." },
-        { threshold: 25, text: "We're working on it..." },
-        { threshold: 35, text: "Still processing..." },
-        { threshold: 40, text: "This is taking longer than expected..." },
-        { threshold: 50, text: "Halfway there!" },
-        { threshold: 55, text: "We're almost done..." },
-        { threshold: 65, text: "Just a bit longer..." },
-        { threshold: 75, text: "It's worth the wait..." },
-        { threshold: 80, text: "Almost done..." },
-        { threshold: 90, text: "So close now..." },
-        { threshold: 95, text: "We're almost there..." },
-        { threshold: 97, text: "Get ready..." },
-        { threshold: 98, text: "Any second now..." }
-    ];
-
     let currentMessageIndex = -1;
+
+    // Get the backend URL from environment or use localhost for development
+    const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3000';
 
     setTimeout(() => {
         heading.style.animation = 'none';
@@ -41,33 +26,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 500);
     }, 5000);
 
-    function updateMessage(progress) {
-        let newMessageIndex = -1;
-        for (let i = messages.length - 1; i >= 0; i--) {
-            if (progress >= messages[i].threshold) {
-                newMessageIndex = i;
-                break;
-            }
-        }
-        
-        if (newMessageIndex !== currentMessageIndex) {
-            currentMessageIndex = newMessageIndex;
-            if (currentMessageIndex >= 0) {
-                messageElement.textContent = messages[currentMessageIndex].text;
+    async function updateMessage(progress) {
+        try {
+            const response = await fetch(`${BACKEND_URL}/api/message?setIndex=${resetCount}&progress=${progress}`);
+            const data = await response.json();
+            
+            if (data.message !== null) {
+                messageElement.textContent = data.message;
                 messageElement.classList.remove('visible');
                 void messageElement.offsetWidth;
                 messageElement.classList.add('visible');
             }
+
+            if (progress >= 25 && !githubLink.classList.contains('visible')) {
+                githubLink.classList.add('visible');
+            }
+        } catch (error) {
+            console.error('Error fetching message:', error);
         }
     }
 
     function updateProgress() {
         if (isPaused) return;
 
-        progress += 0.1;
+        progress += 1;
         
         if (progress >= 99) {
             isPaused = true;
+            resetCount++;
             messageElement.textContent = "Just a few more seconds...";
             messageElement.classList.remove('visible');
             void messageElement.offsetWidth;
@@ -82,7 +68,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 messageElement.classList.add('visible');
                 currentMessageIndex = -1;
                 githubLink.classList.remove('visible');
-                resetCount++; //This is not used for anything. That's not a bug. It's a feature.
             }, 3000);
         }
 
