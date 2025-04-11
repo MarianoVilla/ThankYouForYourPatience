@@ -4,7 +4,12 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(cors({
-    origin: ['https://thankyouforyourpatience.onrender.com', 'http://localhost:3000'],
+    origin: [
+        'https://marianovilla.github.io', 
+        'http://localhost:3000',          
+        'http://127.0.0.1:3000',          
+        'null'
+    ],
     methods: ['GET'],
     credentials: true
 }));
