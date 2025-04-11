@@ -8,8 +8,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let isPaused = false;
     let resetCount = 0;
     let currentMessageIndex = -1;
+    let lastApiCallTime = 0;
 
-    const BACKEND_URL = window.APP_CONFIG.backendUrl;
+    const { backendUrl, increment, apiIntervalMillis } = window.APP_CONFIG;
 
     setTimeout(() => {
         heading.style.animation = 'none';
@@ -26,29 +27,34 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 5000);
 
     async function updateMessage(progress) {
-        try {
-            const response = await fetch(`${BACKEND_URL}/api/message?setIndex=${resetCount}&progress=${progress}`);
-            const data = await response.json();
-            
-            if (data.message !== null) {
-                messageElement.textContent = data.message;
-                messageElement.classList.remove('visible');
-                void messageElement.offsetWidth;
-                messageElement.classList.add('visible');
-            }
+        const now = Date.now();
+        if (now - lastApiCallTime >= apiIntervalMillis) {
+            try {
+                const response = await fetch(`${backendUrl}/api/message?setIndex=${resetCount}&progress=${progress}`);
+                const data = await response.json();
+                
+                if (data.message !== null) {
+                    messageElement.textContent = data.message;
+                    messageElement.classList.remove('visible');
+                    void messageElement.offsetWidth;
+                    messageElement.classList.add('visible');
+                }
 
-            if (progress >= 25 && !githubLink.classList.contains('visible')) {
-                githubLink.classList.add('visible');
+                if (progress >= 25 && !githubLink.classList.contains('visible')) {
+                    githubLink.classList.add('visible');
+                }
+                
+                lastApiCallTime = now;
+            } catch (error) {
+                console.error('Error fetching message:', error);
             }
-        } catch (error) {
-            console.error('Error fetching message:', error);
         }
     }
 
     function updateProgress() {
         if (isPaused) return;
 
-        progress += window.APP_CONFIG.increment;
+        progress += increment;
         
         if (progress >= 99) {
             isPaused = true;
@@ -76,6 +82,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     setTimeout(() => {
-        setInterval(updateProgress, window.APP_CONFIG.apiIntervalMillis);
+        setInterval(updateProgress, window.APP_CONFIG.updateProgressIntervalMillis);
     }, 1500);
 }); 
