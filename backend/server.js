@@ -3,9 +3,8 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Configure CORS to allow requests from GitHub Pages
 app.use(cors({
-    origin: ['https://your-github-username.github.io', 'http://localhost:3000'],
+    origin: ['https://thankyouforyourpatience.onrender.com', 'http://localhost:3000'],
     methods: ['GET'],
     credentials: true
 }));
