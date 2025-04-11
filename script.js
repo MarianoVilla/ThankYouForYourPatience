@@ -10,13 +10,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const messages = [
         { threshold: 10, text: "This might take a moment..." },
+        { threshold: 20, text: "But it'll be worth it..." },
         { threshold: 25, text: "We're working on it..." },
-        { threshold: 40, text: "Still processing..." },
+        { threshold: 35, text: "Still processing..." },
+        { threshold: 40, text: "This is taking longer than expected..." },
         { threshold: 50, text: "Halfway there!" },
+        { threshold: 55, text: "We're almost done..." },
         { threshold: 65, text: "Just a bit longer..." },
         { threshold: 75, text: "It's worth the wait..." },
         { threshold: 80, text: "Almost done..." },
         { threshold: 90, text: "So close now..." },
+        { threshold: 95, text: "We're almost there..." },
+        { threshold: 97, text: "Get ready..." },
         { threshold: 98, text: "Any second now..." }
     ];
 
