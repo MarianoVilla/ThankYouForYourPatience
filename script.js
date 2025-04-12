@@ -16,17 +16,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const { backendUrl, increment, apiIntervalMillis, updateProgressIntervalMillis, debug } = window.APP_CONFIG;
 
-    // Set a page reload identifier in session storage
-    if (sessionStorage.getItem('pageLoadTimestamp')) {
-        // This is a reload, add a custom header to help the server detect reloads
+    // Check if this is a page reload
+    const isReload = sessionStorage.getItem('pageLoadTimestamp') !== null;
+    if (isReload) {
+        console.log('Page reload detected');
         sessionStorage.setItem('isReload', 'true');
     }
     sessionStorage.setItem('pageLoadTimestamp', pageLoadTime.toString());
     
     // Clear session storage on page unload to ensure fresh start
     window.addEventListener('beforeunload', () => {
-        // We intentionally don't clear sessionStorage here so the server 
-        // can detect this was a reload on the next page load
+        sessionStorage.removeItem('isReload');
     });
 
     // Show debug controls in development mode
