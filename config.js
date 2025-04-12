@@ -20,6 +20,6 @@ const isDevelopment = window.location.hostname === 'localhost' ||
                      window.location.protocol === 'file:' ||
                      window.location.protocol === '';
 
-const environment = isDevelopment && false ? 'development' : 'production';
+const environment = isDevelopment ? 'development' : 'production';
 
 window.APP_CONFIG = config[environment]; 
