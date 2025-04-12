@@ -9,7 +9,7 @@ const config = {
     production: {
         backendUrl: 'https://thankyouforyourpatience-be-net.onrender.com',
         increment: 1,
-        apiIntervalMillis: () => Math.floor(Math.random() * (7000 - 5000 + 1)) + 5000,
+        apiIntervalMillis: () => Math.floor(Math.random() * (9000 - 7000 + 1)) + 5000,
         updateProgressIntervalMillis: () => Math.floor(Math.random() * (800 - 400 + 1)) + 400,
         debug: false
     }
