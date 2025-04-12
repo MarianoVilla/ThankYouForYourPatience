@@ -12,22 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentMessageIndex = -1;
     let lastApiCallTime = 0;
     let endAnimationLoaded = false;
-    let pageLoadTime = Date.now();
 
     const { backendUrl, increment, apiIntervalMillis, updateProgressIntervalMillis, debug } = window.APP_CONFIG;
-
-    // Check if this is a page reload
-    const isReload = sessionStorage.getItem('pageLoadTimestamp') !== null;
-    if (isReload) {
-        console.log('Page reload detected');
-        sessionStorage.setItem('isReload', 'true');
-    }
-    sessionStorage.setItem('pageLoadTimestamp', pageLoadTime.toString());
-    
-    // Clear session storage on page unload to ensure fresh start
-    window.addEventListener('beforeunload', () => {
-        sessionStorage.removeItem('isReload');
-    });
 
     // Show debug controls in development mode
     if (debug) {
@@ -40,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
             skipToEndButton.disabled = true;
             skipToEndButton.textContent = 'Loading...';
             
-            const response = await fetch(`${backendUrl}/api/debug/skip-to-end`, {
+            const response = await fetch(`${backendUrl}/debug/skip-to-end`, {
                 credentials: 'include'
             });
             
@@ -56,24 +42,14 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const data = await response.json();
             
-            // Get the end message and token for animation
-            const messageResponse = await fetch(`${backendUrl}/api/message`, {
+            const messageResponse = await fetch(`${backendUrl}/message`, {
                 credentials: 'include'
             });
             
             const messageData = await messageResponse.json();
             
-            // Trigger the end animation
             if (messageData.endMessage) {
-                triggerServerEndAnimation(messageData.endMessage, messageData.verificationToken || data.token);
-                
-                // Add debug info about token if in debug mode
-                if (debug) {
-                    const debugInfo = document.createElement('div');
-                    debugInfo.className = 'debug-info';
-                    debugInfo.textContent = `Debug: Token = ${messageData.verificationToken || data.token}`;
-                    debugControls.appendChild(debugInfo);
-                }
+                triggerEndAnimation(messageData);
             }
         } catch (error) {
             console.error('Error skipping to end:', error);
@@ -104,37 +80,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (now - lastApiCallTime >= apiIntervalMillis()) {
             try {
-                // Add custom headers to help server detect reloads
-                const headers = {
-                    'X-Page-Load-Time': pageLoadTime.toString()
-                };
-                
-                // Add reload header if this is a reload
-                if (sessionStorage.getItem('isReload') === 'true') {
-                    headers['If-Modified-Since'] = 'reload-detected';
-                    // Clear the reload flag after first API call
-                    sessionStorage.removeItem('isReload');
-                }
-                
-                const response = await fetch(`${backendUrl}/api/message`, {
-                    credentials: 'include',
-                    headers
+                const response = await fetch(`${backendUrl}/message`, {
+                    credentials: 'include'
                 });
                 const data = await response.json();
                 
                 if (data.endMessage) {
-                    // Request the end animation from the server
-                    triggerServerEndAnimation(data.endMessage, data.verificationToken);
+                    triggerEndAnimation(data);
                     return;
                 }
                 
-                if (data.message !== null) {
-                    messageElement.textContent = data.message;
+                if (data.text) {
+                    messageElement.textContent = data.text;
                     messageElement.classList.remove('visible');
                     void messageElement.offsetWidth;
                     messageElement.classList.add('visible');
                 }
-                if(data.hexColor != null){
+                
+                if (data.hexColor) {
                     progressFill.style.backgroundColor = data.hexColor;
                 }
 
@@ -149,75 +112,45 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Request end animation from server instead of storing it in client code
-    async function triggerServerEndAnimation(endMessage, token) {
+    function triggerEndAnimation(data) {
         isPaused = true;
         
-        // Set progress bar to 100%
         progress = 100;
         progressFill.style.width = `${progress}%`;
         progressText.textContent = `${Math.floor(progress)}%`;
-        progressFill.style.backgroundColor = '#FFD700';
         
-        // Display end message
-        messageElement.textContent = endMessage;
+        messageElement.textContent = data.endMessage;
         messageElement.classList.remove('visible');
         
-        // Change heading
         heading.style.opacity = '0';
         setTimeout(() => {
             heading.textContent = 'Mission Complete!';
             heading.style.opacity = '1';
         }, 500);
         
-        try {
-            // Request the animation elements from server with verification token
-            const response = await fetch(`${backendUrl}/api/end-animation`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify({ token })
+        if (data.css) {
+            const style = document.createElement('style');
+            style.textContent = data.css;
+            document.head.appendChild(style);
+        }
+        
+        if (data.classes) {
+            Object.entries(data.classes).forEach(([selector, className]) => {
+                const element = document.querySelector(selector);
+                if (element) {
+                    element.classList.add(className);
+                }
             });
-            
-            if (!response.ok) {
-                console.error('Could not load end animation');
-                return;
-            }
-            
-            const animationData = await response.json();
-            
-            // Apply the animation CSS and scripts
-            if (animationData.css) {
-                const style = document.createElement('style');
-                style.textContent = animationData.css;
-                document.head.appendChild(style);
-            }
-            
-            // Apply any animation classes
-            if (animationData.classes) {
-                Object.entries(animationData.classes).forEach(([selector, className]) => {
-                    const element = document.querySelector(selector);
-                    if (element) {
-                        element.classList.add(className);
-                    }
-                });
-            }
-            
-            // Execute animation function if provided
-            if (animationData.animationScript) {
-                const script = document.createElement('script');
-                script.textContent = animationData.animationScript;
-                document.body.appendChild(script);
-            }
-            
-            // Hide debug controls after animation is triggered
-            if (debug) {
-                debugControls.style.display = 'none';
-            }
-        } catch (error) {
-            console.error('Error loading end animation:', error);
+        }
+        
+        if (data.animationScript) {
+            const script = document.createElement('script');
+            script.textContent = data.animationScript;
+            document.body.appendChild(script);
+        }
+        
+        if (debug) {
+            debugControls.style.display = 'none';
         }
     }
 
@@ -247,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         progressFill.style.width = `${progress}%`;
         progressText.textContent = `${Math.floor(progress)}%`;
-        updateMessage(progress);
+        updateMessage();
     }
 
     setTimeout(() => {
