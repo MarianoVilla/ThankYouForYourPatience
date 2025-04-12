@@ -131,4 +131,30 @@ h1 {
 
 .github-link:hover {
     color: #ff6666;
-}  
+}
+
+/* Debug styles */
+.debug-button {
+    padding: 8px 16px;
+    background-color: #ff6b6b;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.debug-button:hover {
+    background-color: #ff5252;
+}
+
+.debug-info {
+    margin-top: 10px;
+    padding: 8px;
+    background-color: #f8f8f8;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 12px;
+    color: #333;
+}
